@@ -8,7 +8,7 @@ module.exports = {
     'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:react/recommended',
     'plugin:prettier/recommended',
-    'prettier/@typescript-eslint',
+    'prettier',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -45,6 +45,7 @@ module.exports = {
     '@typescript-eslint/unbound-method': 'warn',
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'react/display-name': 'warn',
+    'react/no-children-prop': 'off',
     'react/no-find-dom-node': 'off',
   },
 }

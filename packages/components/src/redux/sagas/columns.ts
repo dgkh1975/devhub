@@ -1,12 +1,5 @@
 import { AppState, InteractionManager } from 'react-native'
-import {
-  all,
-  call,
-  put,
-  select,
-  takeEvery,
-  takeLatest,
-} from 'redux-saga/effects'
+import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import {
   ActivityColumnSubscriptionCreation,
@@ -40,47 +33,47 @@ export function getDefaultColumns(username: string): ColumnsAndSubscriptions {
     },
   }) as NotificationColumnSubscription
 
-  const userReceivedEventsSubscription = createSubscriptionObjectWithId<ActivityColumnSubscriptionCreation>(
-    {
+  const userReceivedEventsSubscription =
+    createSubscriptionObjectWithId<ActivityColumnSubscriptionCreation>({
       type: 'activity',
       subtype: 'USER_RECEIVED_EVENTS',
       params: {
         username,
       },
-    },
-  )
+    })
 
-  const involvedIssuesAndPRsSubscription = createSubscriptionObjectWithId<IssueOrPullRequestColumnSubscriptionCreation>(
-    {
-      type: 'issue_or_pr',
-      subtype: undefined,
-      params: {
-        involves: { [username.toLowerCase()]: true },
-        subjectType: undefined,
+  const involvedIssuesAndPRsSubscription =
+    createSubscriptionObjectWithId<IssueOrPullRequestColumnSubscriptionCreation>(
+      {
+        type: 'issue_or_pr',
+        subtype: undefined,
+        params: {
+          involves: { [username.toLowerCase()]: true },
+          subjectType: undefined,
+        },
       },
-    },
-  )
+    )
 
-  const myReposIssuesAndPRsSubscription = createSubscriptionObjectWithId<IssueOrPullRequestColumnSubscriptionCreation>(
-    {
-      type: 'issue_or_pr',
-      subtype: undefined,
-      params: {
-        owners: { [username.toLowerCase()]: { value: true, repos: {} } },
-        subjectType: undefined,
+  const myReposIssuesAndPRsSubscription =
+    createSubscriptionObjectWithId<IssueOrPullRequestColumnSubscriptionCreation>(
+      {
+        type: 'issue_or_pr',
+        subtype: undefined,
+        params: {
+          owners: { [username.toLowerCase()]: { value: true, repos: {} } },
+          subjectType: undefined,
+        },
       },
-    },
-  )
+    )
 
-  const userEventsSubscription = createSubscriptionObjectWithId<ActivityColumnSubscriptionCreation>(
-    {
+  const userEventsSubscription =
+    createSubscriptionObjectWithId<ActivityColumnSubscriptionCreation>({
       type: 'activity',
       subtype: 'USER_EVENTS',
       params: {
         username,
       },
-    },
-  )
+    })
 
   const result: ColumnsAndSubscriptions = {
     columns: [
@@ -168,7 +161,7 @@ function* onAddColumn(
   const columnId = action.payload.column.id
 
   if (AppState.currentState === 'active')
-    yield call(InteractionManager.runAfterInteractions)
+    yield* call(InteractionManager.runAfterInteractions)
 
   emitter.emit('FOCUS_ON_COLUMN', {
     animated: true,
@@ -181,7 +174,7 @@ function* onAddColumn(
 function* onMoveColumn(
   action: ExtractActionFromActionCreator<typeof actions.moveColumn>,
 ) {
-  const ids: string[] = yield select(selectors.columnIdsSelector)
+  const ids: string[] = yield* select(selectors.columnIdsSelector)
   if (!(ids && ids.length)) return
 
   const columnIndex = Math.max(
@@ -205,7 +198,7 @@ function* onMoveColumn(
 function* onDeleteColumn(
   action: ExtractActionFromActionCreator<typeof actions.deleteColumn>,
 ) {
-  const ids: string[] = yield select(selectors.columnIdsSelector)
+  const ids: string[] = yield* select(selectors.columnIdsSelector)
   if (!(ids && ids.length)) return
 
   // Fixes blank screen on Android after removing the last column.
@@ -251,19 +244,19 @@ function* onColumnSubscriptionFilterChange(
 ) {
   if (!action.payload.columnId) return
 
-  const column: Column = yield select(
+  const column = yield* select(
     selectors.columnSelector,
     action.payload.columnId,
   )
   if (!(column && column.id)) return
 
-  const subscriptions: ColumnSubscription[] = yield select(
+  const subscriptions: ColumnSubscription[] = yield* select(
     selectors.createColumnSubscriptionsSelector(),
     column.id,
   )
   if (!(subscriptions && subscriptions.length)) return
 
-  yield all(
+  yield* all(
     subscriptions.map(function* (subscription: ColumnSubscription) {
       if (!(subscription && subscription.id)) return
 
@@ -404,21 +397,21 @@ function* onColumnSubscriptionFilterChange(
         ),
       )
 
-      return yield all(result)
+      return yield* all(result)
     }),
   )
 }
 
 export function* columnsSagas() {
-  yield all([
-    yield takeEvery('ADD_COLUMN_AND_SUBSCRIPTIONS', onAddColumn),
-    yield takeEvery('MOVE_COLUMN', onMoveColumn),
-    yield takeEvery('DELETE_COLUMN', onDeleteColumn),
-    yield takeLatest(
+  yield* all([
+    yield* takeEvery('ADD_COLUMN_AND_SUBSCRIPTIONS', onAddColumn),
+    yield* takeEvery('MOVE_COLUMN', onMoveColumn),
+    yield* takeEvery('DELETE_COLUMN', onDeleteColumn),
+    yield* takeLatest(
       ['SET_COLUMN_CLEARED_AT_FILTER', 'CLEAR_ALL_COLUMNS'],
       onClearColumnOrColumns,
     ),
-    yield takeLatest(
+    yield* takeLatest(
       [
         'CLEAR_COLUMN_FILTERS',
         'REPLACE_COLUMN_FILTERS',
